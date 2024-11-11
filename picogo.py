@@ -1,13 +1,8 @@
-import time, board, pwmio, digitalio as dio, analogio as aio, adafruit_hcsr04, neopixel, busio, fourwire, displayio, audiopwmio
+import time, board, pwmio, digitalio as dio, analogio as aio, adafruit_hcsr04, neopixel, busio, fourwire, displayio
 from adafruit_st7789 import ST7789
 
-def sleep_us(microseconds : int):
-    start = time.monotonic_ns()
-    while time.monotonic_ns() - start < microseconds * 1000:
-        pass
-
 class PicoGo:
-    def __init__(self, np_auto_write : bool = True, use_onboard_ble : bool = True):
+    def __init__(self, np_auto_write : bool = True):
         # Motor
         self.MOTOR_PWM_A = pwmio.PWMOut(board.GP16, frequency=1000)
         self.MOTOR_PWM_B = pwmio.PWMOut(board.GP21, frequency=1000)
@@ -48,13 +43,14 @@ class PicoGo:
         self.DISPLAY = ST7789(self.DISPLAY_BUS, width=240, height=135, rotation=270, rowstart=40, colstart=53)
         
         # Buzzer
-        # No working, because all timers are in use
-        # self.SPEKER = audiopwmio.PWMAudioOut(board.GP4)
+        # Not working, because all timers are in use
+        # self.SPEAKER = audiopwmio.PWMAudioOut(board.GP4)
         
         # Bluetooth module
         # No Adafruit BLE, because CTS and RTS aren't connected
         self.BLE = busio.UART(board.GP0, board.GP1, baudrate=115200)
-        
+
+    # Range: -1.0 (backwards) to 1.0 (forwards), 0 (stop)
     def set_motors(self, a : float | None, b : float | None):
         if a != None:
             a = min(1, max(-1, a))
@@ -91,6 +87,7 @@ class PicoGo:
         # No freaking clue what this does, just copied it from the original
         return min(max((self.BATTERY.value * 3.3 / 65535 * 2 - 3) * 100 / 1.2, 0), 100)
 
+# Run module directly to check if everything initilizes properly
 if __name__ == "__main__":
     print("Initializing...")
     go = PicoGo()
